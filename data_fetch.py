@@ -1,3 +1,16 @@
+"""
+data_fetch.py
+
+Handles retrieval of financial data such as stock price returns and sentiment scores.
+Uses Yahoo Finance via the `yfinance` library. Includes fallback logic in case of
+network errors or unavailable data.
+
+Key functions:
+- get_price_return(): Fetches recent price change as a return percentage.
+- get_sentiment_score(): Placeholder for sentiment analysis (currently static).
+- get_live_signals(): Combines return and sentiment data for a set of tickers.
+"""
+
 import yfinance as yf
 import pandas as pd
 
@@ -19,25 +32,25 @@ fallback_sentiments = {
     "VOO": 0.85
 }
 
-def get_price_return(ticker: str, months: int = 6) -> float:
-    """
-    Fetches price return over the past `months` using yfinance.
-    Falls back to static value if any issue occurs.
-    """
+def get_price_return(ticker, period="1mo"):
     try:
-        period = f"{months}mo"
-        data = yf.download(ticker, period=period)
-        if len(data) < 2:
+        data = yf.download(ticker, period=period, auto_adjust=False, threads=False)
+
+        if data.empty or "Adj Close" not in data.columns:
             raise ValueError("Insufficient data returned")
 
-        start_price = data['Adj Close'].iloc[0]
-        end_price = data['Adj Close'].iloc[-1]
-        pct_return = (end_price - start_price) / start_price
+        # Drop nulls and ensure enough data points
+        prices = data["Adj Close"].dropna()
+        if len(prices) < 2:
+            raise ValueError("Not enough price points")
 
-        return round(pct_return, 4)  # e.g., 0.045 for 4.5%
+        pct_return = (prices.iloc[-1] / prices.iloc[0]) - 1
+        return float(pct_return.iloc[0]) if isinstance(pct_return, pd.Series) else float(pct_return)
+
+
     except Exception as e:
         print(f"⚠️ Using fallback for {ticker}: {e}")
-        return fallback_returns.get(ticker, 0.01)
+        return 0.02  # fallback return
 
 def get_live_signals(tickers: list[str]) -> dict:
     """
