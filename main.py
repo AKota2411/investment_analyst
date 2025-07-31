@@ -5,7 +5,7 @@ from report_generator import save_markdown_report
 # Load predefined investor personas
 personas = get_personas()
 
-# Select one persona for demonstration
+# Select one persona for demonstratio
 persona = personas['college_student']  # Could be replaced with user input
 
 # Static stock and index fund signal data
