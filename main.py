@@ -1,27 +1,32 @@
+"""
+main.py
+
+Entry point to generate a personalized portfolio report for a selected investor persona.
+Fetches static stock signals, invokes GPT for explanation, and saves the result to /reports.
+Usage: python3 main.py [persona_key]
+"""
+
 from personas import get_personas
+from data_fetch import get_live_signals
 from gpt_utils import build_portfolio_with_gpt
 from report_generator import save_markdown_report
 
-# Load predefined investor personas
+# Step 1: Define the tickers you want to test (stock + ETF)
+tickers = ["AAPL", "TSLA", "GOOG", "SPY", "VOO"]
+
+# Step 2: Get live/fallback signals from Yahoo Finance
+stock_signals = get_live_signals(tickers)
+
+# Step 3: Load beginner-friendly persona
 personas = get_personas()
+persona = personas["college_student"]
 
-# Select one persona for demonstratio
-persona = personas['college_student']  # Could be replaced with user input
-
-# Static stock and index fund signal data
-# Values represent predicted return and sentiment score (between -1 and 1)
-stock_signals = {
-    "AAPL": {"return": 0.03, "sentiment": 0.6},     # Apple: Moderate growth, positive sentiment
-    "TSLA": {"return": 0.05, "sentiment": 0.8},     # Tesla: High risk, strong news coverage
-    "GOOG": {"return": 0.02, "sentiment": 0.5},     # Google: Stable growth, neutral sentiment
-    "SPY":  {"return": 0.01, "sentiment": 0.9},     # S&P 500 ETF: Very low risk, steady market sentiment
-    "VOO":  {"return": 0.015, "sentiment": 0.85}    # Vanguard S&P 500 ETF: Conservative, highly diversified
-}
-
-# Ask GPT to build a rationale-based portfolio
+# Step 4: Generate GPT response using gpt-3.5-turbo
 report = build_portfolio_with_gpt(persona, stock_signals)
 
-# Save the response as a Markdown report
+# Step 5: Save output to a Markdown report
 save_markdown_report("college_student", report)
 
-print("Portfolio report saved to reports/college_student_report.md")
+# Step 6: Print the Markdown to console for review
+print("\n===== GPT Portfolio Report =====\n")
+print(report)
