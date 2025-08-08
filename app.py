@@ -3,6 +3,7 @@ import streamlit as st
 from personas import get_personas
 from data_fetch import get_live_signals
 from gpt_utils import build_portfolio_with_gpt
+from industry_select import fetch_tickers_by_industries
 
 # --------------------------
 # Page config and CSS theme
@@ -270,9 +271,13 @@ def step_results():
         "These recommendations are derived from your inputs and current market signals."
     )
 
+    # >>> NEW: live ticker selection by industries
+    with st.spinner("Selecting relevant companies from your chosen industries..."):
+        tickers = fetch_tickers_by_industries(a.get("industries", []), per_industry=5, max_total=15)
+
     # Fetch signals and ask GPT
     with st.spinner("Generating recommendations..."):
-        signals = get_live_signals(["AAPL", "TSLA", "GOOG", "SPY", "VOO"])
+        signals = get_live_signals(tickers)
         report = build_portfolio_with_gpt(persona, signals)
 
     # Render bullets with alignment note
