@@ -19,11 +19,15 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def build_portfolio_with_gpt(persona, stock_signals):
     try:
-        persona_name = persona["name"]
-        persona_goals = persona["goal"]
+        persona_name = persona.get("name", "Investor")
+        persona_goals = persona.get("goal", "grow wealth")
         scenario = persona.get("scenario", "balanced long-term growth")
-        risk = persona.get("risk_tolerance", "medium")
+        risk = persona.get("risk_tolerance", persona.get("risk", "medium"))
         holding = persona.get("holding_period", "5+ years")
+        industries = persona.get("preferred_industries", [])
+
+        # Format industries into a readable string
+        industries_str = ", ".join(industries) if industries else "no specific industries selected"
 
         stock_descriptions = [
             f"{ticker}: return={float(info['return'])*100:.1f}%, sentiment={float(info['sentiment'])*100:.0f}%"
@@ -35,11 +39,14 @@ def build_portfolio_with_gpt(persona, stock_signals):
             f"They are seeking: {scenario}\n"
             f"Investment goal: {persona_goals}\n"
             f"Risk tolerance: {risk}\n"
-            f"Holding period: {holding}\n\n"
+            f"Holding period: {holding}\n"
+            f"Preferred industries: {industries_str}\n\n"
             f"Available stocks and funds with predicted returns and sentiment scores:\n"
             f"{chr(10).join(stock_descriptions)}\n\n"
             f"Suggest a 3–4 asset portfolio tailored to this persona.\n"
+            f"Prioritize companies and sectors that align with the preferred industries when possible.\n"
             f"For each recommended asset:\n"
+            f"- Start with a bullet point naming the company or ETF\n"
             f"- Provide 3–4 sentences explaining the rationale\n"
             f"- Include specific numbers: expected return (%, based on prediction), sentiment score (0–100%), and any notable historical return data\n"
             f"- Add 1–2 pros and 1–2 cons based on risk, performance, or volatility\n"
@@ -48,9 +55,8 @@ def build_portfolio_with_gpt(persona, stock_signals):
             f"End with a reminder that the final investment decision is up to the user."
         )
 
-
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",  # low-cost model
+            model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7
         )
