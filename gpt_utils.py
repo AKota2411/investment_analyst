@@ -79,7 +79,7 @@ def build_portfolio_with_gpt(persona, stock_signals):
             f"Risk tolerance: {risk}\n"
             f"Holding period: {holding}\n"
             f"Preferred industries: {industries_str}\n\n"
-            "Candidate stocks/funds with predicted metrics:\n"
+            f"Available stocks and funds (all have positive recent returns) with predicted returns and sentiment scores:\n"
             f"{stock_block}\n\n"
             "Task: Recommend a 3–4 asset portfolio tailored to this investor and industries. "
             "Be concise, numerically grounded, and beginner-friendly.\n\n"

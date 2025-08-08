@@ -55,11 +55,16 @@ def get_price_return(ticker, period="1mo"):
 def get_live_signals(tickers: list[str]) -> dict:
     """
     Combines returns + fallback sentiment for a list of tickers.
+    Filters out negative returns to avoid recommending losing stocks.
     """
     signals = {}
     for ticker in tickers:
+        ret = get_price_return(ticker)
+        if ret <= 0:
+            print(f"⏭ Skipping {ticker} due to negative return: {ret:.2%}")
+            continue
         signals[ticker] = {
-            "return": get_price_return(ticker),
+            "return": ret,
             "sentiment": fallback_sentiments.get(ticker, 0.5)
         }
     return signals
